@@ -1,6 +1,6 @@
 import { AIChatAgent } from "@cloudflare/ai-chat";
 import { streamText, convertToModelMessages, stepCountIs } from "ai";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
+// import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { tools } from "./tools";
 
 interface Env {
@@ -24,26 +24,37 @@ Guidelines for generating diagrams:
 When the user asks to modify an element, use the modifyDiagram tool with the element's id.`;
 
 export class DesignAgent extends AIChatAgent<Env> {
-    // // [FIX 1: THE TS ENV COMPILATION ERROR]
-    // // Explicitly defining the constructor propagates the Env type constraints
-    // // down to the class instance properties so 'this.env' resolves correctly.
-    // constructor(ctx: DurableObjectState, env: Env) {
-    //     super(ctx, env);
-    // }
-
     async onChatMessage() {
-        const google = createGoogleGenerativeAI({
-            apiKey: this.env.GEMINI_API_KEY,
-        });
+        // 1. Guard check for missing environment configuration
+        if (!this.env.GEMINI_API_KEY) {
+            console.error(
+                "❌ CRITICAL: GEMINI_API_KEY is missing from your local environment bindings!",
+            );
+            throw new Error("Missing GEMINI_API_KEY");
+        }
 
-        const result = streamText({
-            model: google("gemini-2.5-flash"),
-            system: SYSTEM_PROMPT,
-            messages: await convertToModelMessages(this.messages),
-            tools,
-            stopWhen: stepCountIs(5),
-        });
+        try {
+            // 2. Import the Google provider dynamically inside the runtime loop
+            const { createGoogleGenerativeAI } = await import("@ai-sdk/google");
 
-        return result.toUIMessageStreamResponse();
+            const google = createGoogleGenerativeAI({
+                apiKey: this.env.GEMINI_API_KEY,
+            });
+
+            const result = streamText({
+                model: google("gemini-2.5-flash"),
+                system: SYSTEM_PROMPT,
+                messages: await convertToModelMessages(this.messages),
+                tools,
+                stopWhen: stepCountIs(5),
+            });
+
+            return result.toUIMessageStreamResponse();
+        } catch (error: any) {
+            // Force the real, un-obscured stack trace into the terminal logs
+            console.error("❌ CAPTURED SDK RUNTIME ERROR:", error.message);
+            console.error(error.stack);
+            throw error;
+        }
     }
 }

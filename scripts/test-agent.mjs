@@ -3,7 +3,7 @@
 //   npm run agent "draw a simple flowchart"
 
 const message = process.argv.slice(2).join(" ") || "draw a rectangle";
-const url = "ws://localhost:5173/agents/design-agent/test";
+const url = "ws://localhost:8787/agents/design-agent/test";
 
 const ws = new WebSocket(url);
 const requestId = crypto.randomUUID();
