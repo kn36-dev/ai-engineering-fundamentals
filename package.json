@@ -5,6 +5,7 @@
     "type": "module",
     "scripts": {
         "dev": "vite dev",
+        "dev:backend": "wrangler dev",
         "build": "vite build",
         "preview": "vite preview",
         "docs": "vitepress dev lessons --port=5170",

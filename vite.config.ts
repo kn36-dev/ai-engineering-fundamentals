@@ -7,6 +7,15 @@ import { builtinModules } from "node:module";
 const externalBackups = new Map<string, any>();
 
 export default defineConfig({
+    server: {
+        proxy: {
+            "/agents": {
+                target: "http://localhost:8787",
+                ws: true,
+                changeOrigin: true,
+            },
+        },
+    },
     plugins: [
         // 1. THE TRANSFORMER: Remaps bare Node imports to 'node:' namespaces
         // and marks them external so Vite doesn't try to bundle them.
@@ -44,7 +53,7 @@ export default defineConfig({
         },
 
         react(),
-        cloudflare(),
+        // cloudflare(),
         // 2. THE PLATFORM EXTERNALIZER: Handles runtime native namespaces
         {
             name: "dynamic-cloudflare-externalizer",

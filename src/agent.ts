@@ -1,6 +1,6 @@
 import { AIChatAgent } from "@cloudflare/ai-chat";
 import { streamText, convertToModelMessages, stepCountIs } from "ai";
-// import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
 import { tools } from "./tools";
 
 interface Env {
@@ -25,18 +25,7 @@ When the user asks to modify an element, use the modifyDiagram tool with the ele
 
 export class DesignAgent extends AIChatAgent<Env> {
     async onChatMessage() {
-        // 1. Guard check for missing environment configuration
-        if (!this.env.GEMINI_API_KEY) {
-            console.error(
-                "❌ CRITICAL: GEMINI_API_KEY is missing from your local environment bindings!",
-            );
-            throw new Error("Missing GEMINI_API_KEY");
-        }
-
         try {
-            // 2. Import the Google provider dynamically inside the runtime loop
-            const { createGoogleGenerativeAI } = await import("@ai-sdk/google");
-
             const google = createGoogleGenerativeAI({
                 apiKey: this.env.GEMINI_API_KEY,
             });
