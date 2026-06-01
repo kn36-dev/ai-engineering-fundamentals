@@ -13,7 +13,7 @@
         "agent": "node scripts/test-agent.mjs"
     },
     "dependencies": {
-        "@ai-sdk/google": "^3.0.80",
+        "@ai-sdk/groq": "^3.0.39",
         "@cloudflare/ai-chat": "^0.7.2",
         "@excalidraw/excalidraw": "^0.18.0",
         "agents": "^0.13.3",

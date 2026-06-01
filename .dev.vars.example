@@ -1,4 +1,6 @@
 # Copy this file to .dev.vars and fill in your keys
 # cp .dev.vars.example .dev.vars
 
-ANTHROPIC_API_KEY=your-anthropic-api-key-here
+OPENAI_API_KEY=your-openai-api-key-here
+GEMINI_API_KEY=your-gemini-api-key-here
+GROQ_API_KEY=your-groq-api-key-here

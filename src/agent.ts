@@ -1,10 +1,10 @@
 import { AIChatAgent } from "@cloudflare/ai-chat";
 import { streamText, convertToModelMessages, stepCountIs } from "ai";
-import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createGroq } from "@ai-sdk/groq";
 import { tools } from "./tools";
 
 interface Env {
-    GEMINI_API_KEY: string;
+    GROQ_API_KEY: string;
 }
 
 const SYSTEM_PROMPT = `You are a diagram design assistant. You help users create and modify diagrams on an Excalidraw canvas.
@@ -26,18 +26,19 @@ When the user asks to modify an element, use the modifyDiagram tool with the ele
 export class DesignAgent extends AIChatAgent<Env> {
     async onChatMessage() {
         try {
-            const google = createGoogleGenerativeAI({
-                apiKey: this.env.GEMINI_API_KEY,
+            const groq = createGroq({
+                apiKey: this.env.GROQ_API_KEY,
             });
 
             console.log({ messagesInAgent: this.messages });
 
             const result = streamText({
-                model: google("gemini-2.5-flash"),
+                model: groq("llama-3.1-8b-instant"),
                 system: SYSTEM_PROMPT,
                 messages: await convertToModelMessages(this.messages),
                 tools,
                 stopWhen: stepCountIs(5),
+                temperature: 0,
             });
 
             return result.toUIMessageStreamResponse();
