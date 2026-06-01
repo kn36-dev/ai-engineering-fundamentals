@@ -30,6 +30,8 @@ export class DesignAgent extends AIChatAgent<Env> {
                 apiKey: this.env.GEMINI_API_KEY,
             });
 
+            console.log({ messagesInAgent: this.messages });
+
             const result = streamText({
                 model: google("gemini-2.5-flash"),
                 system: SYSTEM_PROMPT,

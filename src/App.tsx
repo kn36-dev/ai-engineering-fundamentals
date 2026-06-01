@@ -5,10 +5,8 @@ import ChatPanel from "./components/chat/ChatPanel";
 import "./App.css";
 
 import { useAgent } from 'agents/react'
-// import { useAgentChat } from "@cloudflare/ai-chat/react";
-import { useAgentChat } from "agents/ai-react";
+import { useAgentChat } from "@cloudflare/ai-chat/react";
 import { CaptureUpdateAction, convertToExcalidrawElements, newElementWith } from "@excalidraw/excalidraw";
-import { newElement } from "@excalidraw/excalidraw/element/newElement";
 
 const sessionId = crypto.randomUUID()
 
@@ -26,18 +24,42 @@ export default function App() {
   const agent = useAgent({ agent: 'design-agent', name: sessionId })
   const { messages, sendMessage, status } = useAgentChat({ agent })
 
+  // Inside App.tsx, right below your hooks:
+  useEffect(() => {
+    if (messages.length > 0) {
+      const lastMessage = messages[messages.length - 1];
+      console.log("🔍 [App.tsx] Full Messages Array:", messages);
+      console.log("👉 [App.tsx] Latest Message Payload:", JSON.stringify(lastMessage, null, 2));
+    }
+  }, [messages]);
+
   useEffect(() => {
     if (!excalidrawAPI) return
 
     for (const message of messages) {
       if (message.role !== 'assistant') continue
+
+      console.log("🛠️ [Diagram Loop] Processing Assistant Message parts:", message.parts);
+
       for (const part of message.parts ?? []) {
+        console.log("📦 [Diagram Loop] Current Part Object:", part);
+
         if (part.type !== 'tool-generateDiagram' && part.type !== 'tool-modifyDiagram') {
+          console.log(`❌ Skipped: type '${part.type}' is not a diagram tool`);
           continue;
         }
 
-        if (part.state !== 'output-available') continue
-        if (appliedToolCalls.current.has(part.toolCallId)) continue
+        if (part.state !== 'output-available') {
+          console.log(`❌ Skipped: state is '${part.state}', expected 'output-available'`);
+          continue
+        }
+
+        if (appliedToolCalls.current.has(part.toolCallId)) {
+          console.log(`❌ Skipped: Tool Call ID ${part.toolCallId} already applied`);
+          continue
+        }
+
+        console.log("🚀 SUCCESS: Executing canvas update for tool!", part);
 
         if (part.type === 'tool-generateDiagram') {
           appliedToolCalls.current.add(part.toolCallId)
