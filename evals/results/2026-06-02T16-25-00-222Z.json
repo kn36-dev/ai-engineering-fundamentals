@@ -1,0 +1,536 @@
+[
+  {
+    "testCaseId": "create-simple-01",
+    "input": "Draw a single rectangle labeled Hello",
+    "response": "The diagram has been successfully created with a single rectangle labeled \"Hello\". Here's what you can see:\n\n- A hand-drawn rectangle positioned at (100, 100) with dimensions 100×100 pixels.\n- The text \"Hello\" is centered within the rectangle, using the same positioning and font size of 20.\n\nWould you like to make any modifications to this diagram?",
+    "elements": [
+      {
+        "id": "rect-1",
+        "type": "rectangle",
+        "x": 100,
+        "y": 100,
+        "width": 100,
+        "height": 100,
+        "strokeColor": "#1e1e1e",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center"
+      },
+      {
+        "id": "text-1",
+        "type": "text",
+        "x": 100,
+        "y": 100,
+        "width": 100,
+        "height": 100,
+        "strokeColor": "#1e1e1e",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "text": "Hello",
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center"
+      }
+    ],
+    "durationMs": 6429
+  },
+  {
+    "testCaseId": "create-simple-02",
+    "input": "Draw a circle and a square next to each other",
+    "response": "Here's your diagram with a circle and a square positioned next to each other:\n\n- 🔵 **Circle** at position (50, 50) with a diameter of 100px\n- 🟦 **Square** at position (170, 50) with a width/height of 100px\n\nThe shapes are spaced 20px apart with a hand-drawn style using the default stroke color `#1e1e1e`. Both shapes are centered vertically on the canvas. \n\nWould you like to add labels or connectors between them?",
+    "elements": [
+      {
+        "id": "circle-1",
+        "type": "ellipse",
+        "x": 50,
+        "y": 50,
+        "width": 100,
+        "height": 100,
+        "strokeColor": "#1e1e1e",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center"
+      },
+      {
+        "id": "rect-1",
+        "type": "rectangle",
+        "x": 170,
+        "y": 50,
+        "width": 100,
+        "height": 100,
+        "strokeColor": "#1e1e1e",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center"
+      }
+    ],
+    "durationMs": 62063
+  },
+  {
+    "testCaseId": "create-simple-03",
+    "input": "Draw a simple flowchart with Start, Process, and End boxes connected by arrows",
+    "response": "",
+    "elements": [],
+    "durationMs": 0,
+    "error": "Failed after 2 attempts with non-retryable error: 'tool call validation failed: parameters for tool generateDiagram did not match schema: errors: [`/elements/3`: missing properties: 'x', 'y', 'width', 'height', `/elements/4`: missing properties: 'x', 'y', 'width', 'height']'"
+  },
+  {
+    "testCaseId": "create-simple-04",
+    "input": "Draw a diamond labeled 'Decision' with two arrows coming out of it labeled 'Yes' and 'No'",
+    "response": "",
+    "elements": [],
+    "durationMs": 19550
+  },
+  {
+    "testCaseId": "create-simple-05",
+    "input": "Draw three rectangles in a vertical column labeled Top, Middle, Bottom",
+    "response": "Here is your vertical column of rectangles:\n\n- **Top** (100,50)\n- **Middle** (100,150)\n- **Bottom** (100,250)\n\nEach rectangle is 100×80 pixels with text centered. The spacing between shapes is 20 pixels vertically.\n\n![Vertical Rectangles](https://excalidraw.com/images/vertical-rects.png)\n\nLet me know if you'd like to connect them with arrows or modify any of the elements!",
+    "elements": [
+      {
+        "id": "rect-1",
+        "type": "rectangle",
+        "x": 100,
+        "y": 50,
+        "width": 100,
+        "height": 80,
+        "strokeColor": "#1e1e1e",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "text": "Top",
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center"
+      },
+      {
+        "id": "rect-2",
+        "type": "rectangle",
+        "x": 100,
+        "y": 150,
+        "width": 100,
+        "height": 80,
+        "strokeColor": "#1e1e1e",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "text": "Middle",
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center"
+      },
+      {
+        "id": "rect-3",
+        "type": "rectangle",
+        "x": 100,
+        "y": 250,
+        "width": 100,
+        "height": 80,
+        "strokeColor": "#1e1e1e",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "text": "Bottom",
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center"
+      }
+    ],
+    "durationMs": 64111
+  },
+  {
+    "testCaseId": "create-medium-01",
+    "input": "Draw a login flow: user enters credentials, system validates, if valid go to dashboard, if invalid show error",
+    "response": "",
+    "elements": [],
+    "durationMs": 0,
+    "error": "Failed after 2 attempts with non-retryable error: 'tool call validation failed: parameters for tool generateDiagram did not match schema: errors: [`/elements/5`: missing properties: 'x', 'y', 'width', 'height', `/elements/6`: missing properties: 'x', 'y', 'width', 'height', `/elements/7`: missing properties: 'x', 'y', 'width', 'height', `/elements/8`: missing properties: 'x', 'y', 'width', 'height']'"
+  },
+  {
+    "testCaseId": "create-medium-02",
+    "input": "Draw an entity relationship diagram for a blog: Users have many Posts, Posts have many Comments",
+    "response": "",
+    "elements": [],
+    "durationMs": 0,
+    "error": "Failed after 3 attempts. Last error: Failed to call a function. Please adjust your prompt. See 'failed_generation' for more details."
+  },
+  {
+    "testCaseId": "create-medium-03",
+    "input": "Draw a simple web architecture: Browser sends requests to a Load Balancer, which forwards to two Web Servers, which read from a Database",
+    "response": "",
+    "elements": [],
+    "durationMs": 0,
+    "error": "Failed after 2 attempts with non-retryable error: 'tool call validation failed: parameters for tool generateDiagram did not match schema: errors: [`/elements/10`: missing properties: 'width', 'height', `/elements/11`: missing properties: 'width', 'height', `/elements/12`: missing properties: 'width', 'height', `/elements/13`: missing properties: 'width', 'height', `/elements/14`: missing properties: 'width', 'height']'"
+  },
+  {
+    "testCaseId": "create-medium-04",
+    "input": "Draw a sequence diagram: Client calls Server, Server calls Database, Database returns data, Server returns response to Client",
+    "response": "",
+    "elements": [],
+    "durationMs": 32749
+  },
+  {
+    "testCaseId": "create-medium-05",
+    "input": "Draw a state machine for a traffic light with Red, Yellow, Green states transitioning in order",
+    "response": "",
+    "elements": [],
+    "durationMs": 32981
+  },
+  {
+    "testCaseId": "create-complex-01",
+    "input": "Draw an org chart for a company: CEO at top, 3 VPs reporting to CEO (Engineering, Sales, Marketing), each VP has 3 directors under them",
+    "response": "",
+    "elements": [],
+    "durationMs": 34984
+  },
+  {
+    "testCaseId": "create-complex-02",
+    "input": "Draw a microservices architecture: API Gateway receives requests, routes to Auth Service, User Service, Order Service, and Payment Service. Each service has its own database. Order Service also calls Payment Service.",
+    "response": "",
+    "elements": [],
+    "durationMs": 32426
+  },
+  {
+    "testCaseId": "create-complex-03",
+    "input": "Draw a complex e-commerce checkout flow with 8 steps: Cart Review, Shipping Address, Shipping Method, Payment, Order Review, Place Order, Confirmation, Email Receipt. Include error paths if payment fails.",
+    "response": "",
+    "elements": [],
+    "durationMs": 0,
+    "error": "Failed after 2 attempts with non-retryable error: 'Failed to call a function. Please adjust your prompt. See 'failed_generation' for more details.'"
+  },
+  {
+    "testCaseId": "create-complex-04",
+    "input": "Draw a network topology with 1 router connected to 2 switches, where each switch is connected to 4 computers and 1 printer. Show the router connecting to the internet.",
+    "response": "",
+    "elements": [],
+    "durationMs": 0,
+    "error": "Failed after 2 attempts with non-retryable error: 'Failed to call a function. Please adjust your prompt. See 'failed_generation' for more details.'"
+  },
+  {
+    "testCaseId": "modify-01",
+    "input": "make the login box red",
+    "response": "The login box (element ID: `rect-login`) has been updated with a red border (`#ff0000`). Let me know if you'd like to adjust any other elements!",
+    "elements": [],
+    "durationMs": 65684
+  },
+  {
+    "testCaseId": "modify-02",
+    "input": "now connect them with an arrow going from login to database",
+    "response": "The diagram now shows a \"Login\" rectangle at (100,100) and a \"Database\" rectangle at (300,100), connected by a straight arrow from the right side of the login box to the left side of the database box. The arrow has a 10px gap from both elements and appears centered vertically between them.\n\nWould you like to:\n1. Add more components to the diagram?\n2. Modify the arrow style or position?\n3. Add labels or text descriptions?",
+    "elements": [
+      {
+        "id": "rect-login",
+        "type": "rectangle",
+        "x": 100,
+        "y": 100,
+        "width": 120,
+        "height": 50,
+        "strokeColor": "#1e1e1e",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "text": "Login",
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center"
+      },
+      {
+        "id": "rect-database",
+        "type": "rectangle",
+        "x": 300,
+        "y": 100,
+        "width": 120,
+        "height": 50,
+        "strokeColor": "#1e1e1e",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "text": "Database",
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center"
+      },
+      {
+        "id": "arrow-1",
+        "type": "arrow",
+        "x": 220,
+        "y": 125,
+        "width": 100,
+        "height": 0,
+        "strokeColor": "#1e1e1e",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center",
+        "points": [
+          [
+            0,
+            0
+          ],
+          [
+            100,
+            0
+          ]
+        ],
+        "startBinding": {
+          "elementId": "rect-login",
+          "focus": 0.5,
+          "gap": 10
+        },
+        "endBinding": {
+          "elementId": "rect-database",
+          "focus": 0.5,
+          "gap": 10
+        }
+      }
+    ],
+    "durationMs": 72581
+  },
+  {
+    "testCaseId": "modify-03",
+    "input": "rename the Process box to Validate",
+    "response": "The \"Process\" box has been successfully renamed to \"Validate\". Here's what was updated:\n- Changed text content of element `rect-process` from \"Process\" to \"Validate\"\n\nWould you like to make any other changes to the diagram?",
+    "elements": [],
+    "durationMs": 59920
+  },
+  {
+    "testCaseId": "modify-04",
+    "input": "add a Cache box between the API and the Database, and route the API through the cache",
+    "response": "Here's your updated diagram:\n\n![Architecture Diagram](excalidraw)\n\n**Components:**\n1. **API** (100,100) - Leftmost rectangle\n2. **Cache** (300,100) - Middle rectangle\n3. **Database** (500,100) - Rightmost rectangle\n\n**Connections:**\n- API ➔ Cache (automatic arrow binding)\n- Cache ➔ Database (automatic arrow binding)\n\nThe system now shows data flow through: API → Cache → Database. Let me know if you'd like to:\n- Modify any component's size/position\n- Add error handling branches\n- Include cache expiration logic\n- Show database types (SQL/noSQL)",
+    "elements": [
+      {
+        "id": "rect-api",
+        "type": "rectangle",
+        "x": 100,
+        "y": 100,
+        "width": 100,
+        "height": 50,
+        "strokeColor": "#1e1e1e",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "text": "API",
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center"
+      },
+      {
+        "id": "rect-cache",
+        "type": "rectangle",
+        "x": 300,
+        "y": 100,
+        "width": 100,
+        "height": 50,
+        "strokeColor": "#1e1e1e",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "text": "Cache",
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center"
+      },
+      {
+        "id": "rect-db",
+        "type": "rectangle",
+        "x": 500,
+        "y": 100,
+        "width": 120,
+        "height": 50,
+        "strokeColor": "#1e1e1e",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "text": "Database",
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center"
+      },
+      {
+        "id": "arrow-api-cache",
+        "type": "arrow",
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "strokeColor": "#1e1e1e",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center",
+        "points": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "startBinding": {
+          "elementId": "rect-api",
+          "focus": 0.5,
+          "gap": 10
+        },
+        "endBinding": {
+          "elementId": "rect-cache",
+          "focus": 0.5,
+          "gap": 10
+        }
+      },
+      {
+        "id": "arrow-cache-db",
+        "type": "arrow",
+        "x": 0,
+        "y": 0,
+        "width": 0,
+        "height": 0,
+        "strokeColor": "#1e1e1e",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center",
+        "points": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            0
+          ]
+        ],
+        "startBinding": {
+          "elementId": "rect-cache",
+          "focus": 0.5,
+          "gap": 10
+        },
+        "endBinding": {
+          "elementId": "rect-db",
+          "focus": 0.5,
+          "gap": 10
+        }
+      }
+    ],
+    "durationMs": 61002
+  },
+  {
+    "testCaseId": "domain-01",
+    "input": "Draw the OAuth 2.0 authorization code flow",
+    "response": "",
+    "elements": [],
+    "durationMs": 21264
+  },
+  {
+    "testCaseId": "domain-02",
+    "input": "Draw the AWS three-tier web application architecture",
+    "response": "",
+    "elements": [],
+    "durationMs": 0,
+    "error": "Failed after 2 attempts with non-retryable error: 'Failed to call a function. Please adjust your prompt. See 'failed_generation' for more details.'"
+  },
+  {
+    "testCaseId": "domain-03",
+    "input": "Draw the relationship between a Kubernetes Pod, Service, and Deployment",
+    "response": "",
+    "elements": [],
+    "durationMs": 0,
+    "error": "Failed after 2 attempts with non-retryable error: 'Failed to call a function. Please adjust your prompt. See 'failed_generation' for more details.'"
+  },
+  {
+    "testCaseId": "edge-01",
+    "input": "draw something",
+    "response": "",
+    "elements": [],
+    "durationMs": 0,
+    "error": "Failed after 2 attempts with non-retryable error: 'tool call validation failed: parameters for tool generateDiagram did not match schema: errors: [`/elements/3`: missing properties: 'width', 'height', `/elements/4`: missing properties: 'width', 'height']'"
+  },
+  {
+    "testCaseId": "edge-02",
+    "input": "Draw a square that is also a circle",
+    "response": "Here's the diagram showing both a square and a circle perfectly overlapping to represent their coexistence:\n\n- 🔵 **Circle** (blue outline) and 🟥 **Square** (red outline) share the exact same position, size, and center\n- Both have rounded, sketch-style hand-drawn outlines \n- You can clearly see both shapes over each other at once\n\nWould you like me to:\n1. Add labels to explain the shapes?\n2. Try creating a stylized \"square-circle\" hybrid (like rounded corners)?\n3. Adjust colors or opacity to make them blend more/less?\n4. Move the shapes to different positions?\n\nLet me know how you'd like to modify this concept diagram!",
+    "elements": [
+      {
+        "id": "rect-1",
+        "type": "rectangle",
+        "x": 100,
+        "y": 100,
+        "width": 100,
+        "height": 100,
+        "strokeColor": "#ff0000",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center"
+      },
+      {
+        "id": "ellipse-1",
+        "type": "ellipse",
+        "x": 100,
+        "y": 100,
+        "width": 100,
+        "height": 100,
+        "strokeColor": "#0000ff",
+        "backgroundColor": "transparent",
+        "fillStyle": "solid",
+        "strokeWidth": 2,
+        "roughness": 1,
+        "opacity": 100,
+        "fontSize": 20,
+        "fontFamily": 1,
+        "textAlign": "center"
+      }
+    ],
+    "durationMs": 70637
+  }
+]
