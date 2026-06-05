@@ -14,9 +14,13 @@ type CanvasStatePart = {
     data: { elements: ExcalidrawElement[] };
 };
 
-const extractCanvasState = (messages: UIMessage[]) => {
+const extractCanvasState = (messages: UIMessage[]): ExcalidrawElement[] => {
     const last = messages.at(-1);
-    const part = last?.parts.find((p) => p.type === "data-canvas-state");
+    const part = last?.parts.find(
+        (p): p is CanvasStatePart => p.type === "data-canvas-state",
+    );
+
+    return part?.data.elements ?? [];
 };
 
 export class DesignAgent extends AIChatAgent<Env> {
@@ -26,9 +30,15 @@ export class DesignAgent extends AIChatAgent<Env> {
                 apiKey: this.env.GROQ_API_KEY,
             });
 
+            const canvasState = extractCanvasState(this.messages);
+            const messages = await convertToModelMessages(this.messages);
+
+            console.log({ canvasState });
+
             const result = streamAgent({
                 model: groq("qwen/qwen3-32b"),
-                messages: await convertToModelMessages(this.messages),
+                messages,
+                canvasState,
             });
 
             return result.toUIMessageStreamResponse();

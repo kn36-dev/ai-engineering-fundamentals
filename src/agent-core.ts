@@ -71,25 +71,30 @@ interface AgentArgs {
     // Seed canvas state for the headless simulator. The eval passes this so
     // modify cases can be scored against the post application canvas. The
     // worker leaves it undefined; the browser handles the real mutation.
-    canvasState?: any[];
+    canvasState?: unknown[];
     system?: string;
     maxSteps?: number;
 }
 
-const buildSystemPrompt = (base: string, canvasState: any[]) => {
+const buildSystemPrompt = (
+    base: string,
+    canvasState: unknown[] | undefined,
+): string => {
+    console.log({ canvasStateInBuildSystemPrompt: canvasState });
     return `${base}\n\n# Current Canvas state\n\n${serializeCanvasState(canvasState ?? [])}`;
 };
 
 export function streamAgent({
     model,
     messages,
+    canvasState,
     system = SYSTEM_PROMPT,
     maxSteps = 5,
-    canvasState,
 }: AgentArgs) {
+    console.log({ canvasStateInStreamAgent: canvasState });
     return streamText({
         model,
-        system: buildSystemPrompt(system, canvasState ?? []),
+        system: buildSystemPrompt(system, canvasState),
         messages,
         tools,
         stopWhen: stepCountIs(maxSteps),

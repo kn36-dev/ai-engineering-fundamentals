@@ -1,8 +1,8 @@
 import { encode } from "@toon-format/toon";
 import type { ExcalidrawElement } from "../schemas";
 
-export function serializeCanvasState(elements: ExcalidrawElement[]) {
-    if (elements.length) return "canvas: empty";
+export function serializeCanvasState(elements: ExcalidrawElement[]): string {
+    if (!elements.length) return "canvas: empty";
 
     const rows = elements.map((el) => ({
         id: el.id,
@@ -16,7 +16,7 @@ export function serializeCanvasState(elements: ExcalidrawElement[]) {
         to: el.type === "arrow" ? (el.endBinding?.elementId ?? "") : "",
     }));
 
-    return encode(
+    const finalEncodedStructure = encode(
         { elements: rows },
         {
             indent: 2,
@@ -25,4 +25,8 @@ export function serializeCanvasState(elements: ExcalidrawElement[]) {
             flattenDepth: Infinity,
         },
     );
+
+    console.log(finalEncodedStructure);
+
+    return finalEncodedStructure;
 }

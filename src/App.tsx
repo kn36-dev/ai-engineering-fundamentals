@@ -30,7 +30,7 @@ export default function App() {
       ...msg,
       parts: [
         ...msg.parts,
-        { type: 'data-canvas-state', data: { elements } },
+        { type: 'data-canvas-state', data: { elements } } as never,
       ]
     })
   }, [sendMessage, excalidrawAPI])
