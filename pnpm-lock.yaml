@@ -10,6 +10,9 @@ dependencies:
   '@excalidraw/excalidraw':
     specifier: ^0.18.0
     version: 0.18.0(@types/react-dom@19.0.0)(@types/react@19.0.0)(react-dom@19.0.0)(react@19.0.0)
+  '@toon-format/toon':
+    specifier: ^2.3.0
+    version: 2.3.0
   agents:
     specifier: ^0.13.3
     version: 0.13.3(@babel/core@7.29.7)(@cloudflare/ai-chat@0.7.2)(@cloudflare/workers-types@4.20221111.0)(ai@6.0.191)(react@19.0.0)(rolldown@1.0.3)(vite@6.0.0)(zod@4.4.3)
@@ -3111,6 +3114,10 @@ packages:
 
   /@standard-schema/spec@1.1.0:
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
+    dev: false
+
+  /@toon-format/toon@2.3.0:
+    resolution: {integrity: sha512-/Ew9etdRQKVMnm9fDaCG0JjyAOK/O7T0M97oum1aW4W+UR8ZhVVPBanIV7oWgHBiGlnVxV9M55PWQCHofDV07w==}
     dev: false
 
   /@tybys/wasm-util@0.10.2:

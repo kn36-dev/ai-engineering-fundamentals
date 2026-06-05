@@ -1,12 +1,23 @@
 import { AIChatAgent } from "@cloudflare/ai-chat";
-import { convertToModelMessages } from "ai";
+import { convertToModelMessages, UIMessage } from "ai";
 import { createGroq } from "@ai-sdk/groq";
 
 import { streamAgent } from "./agent-core";
+import { ExcalidrawElement } from "./schemas";
 
 interface Env {
     GROQ_API_KEY: string;
 }
+
+type CanvasStatePart = {
+    type: "data-canvas-state";
+    data: { elements: ExcalidrawElement[] };
+};
+
+const extractCanvasState = (messages: UIMessage[]) => {
+    const last = messages.at(-1);
+    const part = last?.parts.find((p) => p.type === "data-canvas-state");
+};
 
 export class DesignAgent extends AIChatAgent<Env> {
     async onChatMessage() {

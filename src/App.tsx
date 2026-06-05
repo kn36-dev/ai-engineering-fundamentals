@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
 import Canvas from "./components/Canvas";
 import ChatPanel from "./components/chat/ChatPanel";
@@ -23,6 +23,17 @@ export default function App() {
 
   const agent = useAgent({ agent: 'design-agent', name: sessionId })
   const { messages, sendMessage, status } = useAgentChat({ agent })
+
+  const sendWithCanvas = useMemo(() => (msg: { role: 'user', parts: { type: 'text', text: string }[] }) => {
+    const elements = excalidrawAPI?.getSceneElements() ?? [];
+    sendMessage({
+      ...msg,
+      parts: [
+        ...msg.parts,
+        { type: 'data-canvas-state', data: { elements } },
+      ]
+    })
+  }, [sendMessage, excalidrawAPI])
 
   // Inside App.tsx, right below your hooks:
   useEffect(() => {
@@ -98,7 +109,7 @@ export default function App() {
       <div className="canvas-container">
         <Canvas onApiReady={handleApiReady} onThemeChange={setTheme} />
       </div>
-      <ChatPanel messages={messages} sendMessage={sendMessage} status={status} />
+      <ChatPanel messages={messages} sendMessage={sendWithCanvas} status={status} />
     </div>
   );
 }
