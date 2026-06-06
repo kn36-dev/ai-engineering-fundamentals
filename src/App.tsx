@@ -8,6 +8,17 @@ import { useAgent } from 'agents/react'
 import { useAgentChat } from "@cloudflare/ai-chat/react";
 import { CaptureUpdateAction, convertToExcalidrawElements, newElementWith } from "@excalidraw/excalidraw";
 
+import { serializeCanvasState } from './context/canvas-state'
+import { tool } from "ai";
+
+function stripNulls(obj: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v !== null) out[k] = v;
+  }
+  return out;
+}
+
 const sessionId = crypto.randomUUID()
 
 export default function App() {
@@ -15,14 +26,78 @@ export default function App() {
     useState<ExcalidrawImperativeAPI | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
-  const appliedToolCalls = useRef(new Set())
+  const excalidrawAPIRef = useRef<ExcalidrawImperativeAPI | null>(null)
+
+  useEffect(() => {
+    excalidrawAPIRef.current = excalidrawAPI
+  }, [excalidrawAPI])
 
   const handleApiReady = useCallback((api: ExcalidrawImperativeAPI) => {
     setExcalidrawAPI(api);
   }, []);
 
   const agent = useAgent({ agent: 'design-agent', name: sessionId })
-  const { messages, sendMessage, status } = useAgentChat({ agent })
+  const { messages, sendMessage, status } = useAgentChat({
+    agent, onToolCall: async ({ toolCall, addToolOutput }) => {
+      const api = excalidrawAPIRef.current
+      if (!api) {
+        addToolOutput({ toolCallId: toolCall.toolCallId, output: { error: 'canvas not ready. Let the user know to try again in a few seconds.' } })
+        return
+      }
+
+      if (toolCall.toolName === 'queryCanvas') {
+        addToolOutput({ toolCallId: toolCall.toolCallId, output: { summary: serializeCanvasState(api.getSceneElements() as unknown[]) } })
+        return
+      }
+
+      if (toolCall.toolName === 'addElements') {
+        const { elements } = toolCall.input as {
+          elements: Record<string, unknown>[];
+        };
+        const cleaned = elements.map(stripNulls)
+        const newOnes = convertToExcalidrawElements(cleaned as never, { regenerateIds: false })
+        const next = [...api.getSceneElements(), ...newOnes]
+
+        api.updateScene({ elements: next, captureUpdate: 'IMMEDIATELY' })
+        api.scrollToContent(next, { fitToContent: true })
+
+        addToolOutput({ toolCallId: toolCall.toolCallId, output: { added: newOnes.length } })
+        return
+      }
+
+      if (toolCall.toolName === 'updateElements') {
+        const { updates } = toolCall.input as {
+          updates: { id: string; fields: Record<string, unknown> }[];
+        };
+
+        const byId = new Map(updates.map(update => [update.id, stripNulls(update.fields)]))
+        const next = api.getSceneElements().map(el => {
+          const fields = byId.get(el.id)
+          return fields && Object.keys(fields).length > 0 ? newElementWith(el, fields as never) : el
+        })
+
+        api.updateScene({ elements: next, captureUpdate: 'IMMEDIATELY' })
+        api.scrollToContent(next, { fitToContent: true })
+
+        addToolOutput({ toolCallId: toolCall.toolCallId, output: { updated: byId.size } })
+
+        return
+      }
+
+      if (toolCall.toolName === 'removeElements') {
+        const { ids } = toolCall.input as { ids: string[] };
+        const remove = new Set(ids)
+        const next = api.getSceneElements().filter(el => !remove.has(el.id))
+
+        api.updateScene({ elements: next, captureUpdate: 'IMMEDIATELY' })
+        api.scrollToContent(next, { fitToContent: true })
+
+        addToolOutput({ toolCallId: toolCall.toolCallId, output: { removed: remove.size } })
+
+        return
+      }
+    }
+  })
 
   const sendWithCanvas = useMemo(() => (msg: { role: 'user', parts: { type: 'text', text: string }[] }) => {
     const elements = excalidrawAPI?.getSceneElements() ?? [];
@@ -44,72 +119,12 @@ export default function App() {
     }
   }, [messages]);
 
-  useEffect(() => {
-    if (!excalidrawAPI) return
-
-    for (const message of messages) {
-      if (message.role !== 'assistant') continue
-
-      console.log("🛠️ [Diagram Loop] Processing Assistant Message parts:", message.parts);
-
-      for (const part of message.parts ?? []) {
-        console.log("📦 [Diagram Loop] Current Part Object:", part);
-
-        if (part.type !== 'tool-generateDiagram' && part.type !== 'tool-modifyDiagram') {
-          console.log(`❌ Skipped: type '${part.type}' is not a diagram tool`);
-          continue;
-        }
-
-        if (part.state !== 'output-available') {
-          console.log(`❌ Skipped: state is '${part.state}', expected 'output-available'`);
-          continue
-        }
-
-        if (appliedToolCalls.current.has(part.toolCallId)) {
-          console.log(`❌ Skipped: Tool Call ID ${part.toolCallId} already applied`);
-          continue
-        }
-
-        console.log("🚀 SUCCESS: Executing canvas update for tool!", part);
-
-        if (part.type === 'tool-generateDiagram') {
-          appliedToolCalls.current.add(part.toolCallId)
-          const output = part.output as { elements?: any }
-          const skeletonElements = output.elements
-
-          if (Array.isArray(skeletonElements) && skeletonElements.length > 0) {
-            const elements = convertToExcalidrawElements(skeletonElements, { regenerateIds: false })
-            excalidrawAPI.updateScene({ elements })
-            excalidrawAPI.scrollToContent(elements, { fitToContent: true })
-          }
-        } else if (part.type === 'tool-modifyDiagram') {
-          appliedToolCalls.current.add(part.toolCallId)
-          const output = part.output as {
-            elementId?: string
-            updates?: Record<string, any>
-          }
-          if (output?.elementId && output.updates) {
-            const current = excalidrawAPI.getSceneElements()
-            const next = current.map(el =>
-              (el.id === output.elementId ? newElementWith(el, output.updates as any) : el)
-            )
-            excalidrawAPI.updateScene({
-              elements: next,
-              captureUpdate: CaptureUpdateAction.IMMEDIATELY
-            })
-          }
-        }
-
-      }
-    }
-  }, [messages, excalidrawAPI])
-
   return (
     <div className={`app ${theme}`}>
       <div className="canvas-container">
         <Canvas onApiReady={handleApiReady} onThemeChange={setTheme} />
       </div>
-      <ChatPanel messages={messages} sendMessage={sendWithCanvas} status={status} />
+      <ChatPanel messages={messages} sendMessage={sendMessage} status={status} />
     </div>
   );
 }

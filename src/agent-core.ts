@@ -5,7 +5,7 @@ import {
     LanguageModel,
     ModelMessage,
 } from "ai";
-import { tools } from "./tools";
+import { buildTools } from "./tools";
 import { serializeCanvasState } from "./context/canvas-state";
 
 export const SYSTEM_PROMPT = `# Role
@@ -14,8 +14,10 @@ You are a technical diagram design assistant that controls an Excalidraw canvas.
 
 # Tools
 
-- **generateDiagram(elements)** produce a list of Excalidraw elements. Use when the canvas is empty or the diagram needs to be replaced from scratch.
-- **modifyDiagram(elementId, updates)** change a single existing element by id. Element ids come from the canvas state in this prompt.
+- **queryCanvas**: Read the current layout. Run this immediately if you need to know what shapes exist on the canvas before making updates. Takes an empty object \`{}\`.
+- **addElements**: Insert new shapes, labels, or connections. Pass an array of new elements. Ensure all generated IDs are stable, unique, and human-readable (e.g., 'rect_login_box').
+- **updateElements**: Modify specific fields of existing elements by id. Pass an array of specific fields to update; use \`null\` for any field you do not wish to alter.
+- **removeElements**: Delete elements from the canvas by passing an array of their string IDs.
 
 # Hard rules
 
@@ -91,12 +93,11 @@ export function streamAgent({
     system = SYSTEM_PROMPT,
     maxSteps = 5,
 }: AgentArgs) {
-    console.log({ canvasStateInStreamAgent: canvasState });
     return streamText({
         model,
         system: buildSystemPrompt(system, canvasState),
         messages,
-        tools,
+        tools: buildTools(),
         stopWhen: stepCountIs(maxSteps),
     });
 }
@@ -111,7 +112,7 @@ export async function runAgent({
         model,
         system,
         messages,
-        tools,
+        tools: buildTools(),
         stopWhen: stepCountIs(maxSteps),
     });
 

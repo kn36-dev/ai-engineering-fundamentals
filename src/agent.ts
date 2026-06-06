@@ -31,14 +31,14 @@ export class DesignAgent extends AIChatAgent<Env> {
             });
 
             const canvasState = extractCanvasState(this.messages);
-            const messages = await convertToModelMessages(this.messages);
-
             console.log({ canvasState });
+
+            const messages = await convertToModelMessages(this.messages);
 
             const result = streamAgent({
                 model: groq("qwen/qwen3-32b"),
                 messages,
-                canvasState,
+                // canvasState,
             });
 
             return result.toUIMessageStreamResponse();
