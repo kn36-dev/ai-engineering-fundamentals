@@ -1,16 +1,27 @@
-import { useState, useCallback, useRef, useEffect, useMemo } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import type { ExcalidrawImperativeAPI } from "@excalidraw/excalidraw/types";
+import {
+  convertToExcalidrawElements,
+  CaptureUpdateAction,
+  newElementWith,
+} from "@excalidraw/excalidraw";
+import { useAgent } from "agents/react";
+import { useAgentChat } from "@cloudflare/ai-chat/react";
 import Canvas from "./components/Canvas";
 import ChatPanel from "./components/chat/ChatPanel";
+import { serializeCanvasState } from "./context/canvas-state";
 import "./App.css";
 
-import { useAgent } from 'agents/react'
-import { useAgentChat } from "@cloudflare/ai-chat/react";
-import { CaptureUpdateAction, convertToExcalidrawElements, newElementWith } from "@excalidraw/excalidraw";
+// One agent instance per page load. The canvas state lives only in the
+// browser, so persisting chat history across refreshes would leave a dead
+// conversation referencing diagrams that no longer exist.
+const sessionId = crypto.randomUUID();
+const AGENT_CONFIG = { agent: "design-agent", name: sessionId };
 
-import { serializeCanvasState } from './context/canvas-state'
-import { tool } from "ai";
-
+// Drop null valued fields. Our tool schemas use nullable rather than
+// optional so OpenAI strict mode stays on, which means the agent always
+// sends every field. Excalidraw expects undefined for "use the default,"
+// not null, and choking on `points: null` for a rectangle is a real bug.
 function stripNulls(obj: Record<string, unknown>): Record<string, unknown> {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(obj)) {
@@ -19,26 +30,26 @@ function stripNulls(obj: Record<string, unknown>): Record<string, unknown> {
   return out;
 }
 
-const sessionId = crypto.randomUUID()
-
 export default function App() {
   const [excalidrawAPI, setExcalidrawAPI] =
     useState<ExcalidrawImperativeAPI | null>(null);
   const [theme, setTheme] = useState<"light" | "dark">("light");
 
-  const excalidrawAPIRef = useRef<ExcalidrawImperativeAPI | null>(null)
-
+  // Hold the latest excalidrawAPI in a ref so onToolCall (captured once at
+  // hook init) always reads the live API instead of a stale closure copy.
+  const excalidrawAPIRef = useRef<ExcalidrawImperativeAPI | null>(null);
   useEffect(() => {
-    excalidrawAPIRef.current = excalidrawAPI
-  }, [excalidrawAPI])
+    excalidrawAPIRef.current = excalidrawAPI;
+  }, [excalidrawAPI]);
 
   const handleApiReady = useCallback((api: ExcalidrawImperativeAPI) => {
     setExcalidrawAPI(api);
   }, []);
 
-  const agent = useAgent({ agent: 'design-agent', name: sessionId })
-  const { messages, sendMessage, status } = useAgentChat({
-    agent, onToolCall: async ({ toolCall, addToolOutput }) => {
+  const agent = useAgent(AGENT_CONFIG);
+
+  const handleToolCall = useCallback(async ({ toolCall, addToolOutput }: any) => {
+    {
       const api = excalidrawAPIRef.current
       if (!api) {
         addToolOutput({ toolCallId: toolCall.toolCallId, output: { error: 'canvas not ready. Let the user know to try again in a few seconds.' } })
@@ -97,20 +108,16 @@ export default function App() {
         return
       }
     }
-  })
+  }, []); // Empty dependencies mean this reference stays permanently unique
 
-  const sendWithCanvas = useMemo(() => (msg: { role: 'user', parts: { type: 'text', text: string }[] }) => {
-    const elements = excalidrawAPI?.getSceneElements() ?? [];
-    sendMessage({
-      ...msg,
-      parts: [
-        ...msg.parts,
-        { type: 'data-canvas-state', data: { elements } } as never,
-      ]
-    })
-  }, [sendMessage, excalidrawAPI])
+  // All four canvas tools are client side. The worker streams the call here,
+  // we apply it to the live Excalidraw scene, and submit the result via
+  // addToolOutput so the agent loop resumes.
+  const { messages, sendMessage, status } = useAgentChat({
+    agent,
+    onToolCall: handleToolCall
+  });
 
-  // Inside App.tsx, right below your hooks:
   useEffect(() => {
     if (messages.length > 0) {
       const lastMessage = messages[messages.length - 1];
@@ -124,7 +131,14 @@ export default function App() {
       <div className="canvas-container">
         <Canvas onApiReady={handleApiReady} onThemeChange={setTheme} />
       </div>
-      <ChatPanel messages={messages} sendMessage={sendMessage} status={status} />
+      <ChatPanel
+        messages={messages}
+        sendMessage={sendMessage}
+        status={status}
+      />
+      <a href="#viewer" className="viewer-launch" title="Open diagram viewer for human scoring">
+        viewer
+      </a>
     </div>
   );
 }

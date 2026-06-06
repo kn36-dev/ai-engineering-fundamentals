@@ -95,7 +95,7 @@ export function streamAgent({
 }: AgentArgs) {
     return streamText({
         model,
-        system: buildSystemPrompt(system, canvasState),
+        system,
         messages,
         tools: buildTools(),
         stopWhen: stepCountIs(maxSteps),

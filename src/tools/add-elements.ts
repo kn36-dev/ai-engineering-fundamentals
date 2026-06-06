@@ -6,15 +6,9 @@ import { clean } from "../utils/clean";
 export const addElements = tool({
     // It also supports a `inputExamples` declaration for that purpose
     description:
-        clean(`Add new elements to the canvas. Each element needs an id, type, position, and size.
-
-Example: addElements({ elements: [
-  { id: "rect_start", type: "rectangle", x: 100, y: 100, width: 160, height: 80, text: "Start" },
-  { id: "rect_end", type: "rectangle", x: 360, y: 100, width: 160, height: 80, text: "End" },
-  { id: "arrow_start_end", type: "arrow", x: 260, y: 140, width: 100, height: 0, startBinding: { elementId: "rect_start", focus: 0, gap: 8 }, endBinding: { elementId: "rect_end", focus: 0, gap: 8 } }
-]})`),
+        clean(`"Add new geometric shapes or text elements to the canvas diagram. " +
+        "Provide an array of elements. Do not wrap the JSON output in markdown blocks or function names."`),
     inputSchema: z.object({
         elements: z.array(elementSchema),
     }),
-    strict: true,
 });

@@ -26,9 +26,9 @@ export default function ChatPanel({ messages, sendMessage, status }: ChatPanelPr
 
   const isStreaming = status === 'submitted' || status === 'streaming'
 
-  // Inside ChatPanel.tsx, right above the return statement:
-  console.log("🎨 [ChatPanel] Current Status:", status);
-  console.log("📬 [ChatPanel] Messages passed to MessageList:", messages);
+  // // Inside ChatPanel.tsx, right above the return statement:
+  // console.log("🎨 [ChatPanel] Current Status:", status);
+  // console.log("📬 [ChatPanel] Messages passed to MessageList:", messages);
 
   return (
     <div className="chat-panel">

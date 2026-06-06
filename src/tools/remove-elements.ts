@@ -10,5 +10,4 @@ Example: removeElements({ ids: ["rect_old", "arrow_stale"] })`),
     inputSchema: z.object({
         ids: z.array(z.string()),
     }),
-    strict: true,
 });

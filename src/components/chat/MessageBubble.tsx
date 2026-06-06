@@ -1,13 +1,10 @@
+import type { UIMessage } from "ai";
 import MarkdownRenderer from "./MarkdownRenderer";
-import type { Message } from "./types";
-
-import { type UIMessage } from 'ai'
-
-import ToolStatus from '../streaming/ToolStatus'
-import "../streaming/streaming.css"
+import ToolStatus from "../streaming/ToolStatus";
+import "../streaming/streaming.css";
 
 interface MessageBubbleProps {
-  message: Message;
+  message: UIMessage;
 }
 
 export default function MessageBubble({ message }: MessageBubbleProps) {
@@ -18,22 +15,28 @@ export default function MessageBubble({ message }: MessageBubbleProps) {
       </div>
       <div className="message-content">
         {message.parts?.map((part, i) => {
-          if (part.type === 'text') {
-            if (message.role === 'assistant') {
-              return <MarkdownRenderer key={i} content={part.text} />
+          // Plain text part
+          if (part.type === "text") {
+            if (message.role === "assistant") {
+              return <MarkdownRenderer key={i} content={part.text} />;
             }
-            return <p key={i}>{part.text}</p>
+            return <p key={i}>{part.text}</p>;
           }
 
-          if (part.type?.startsWith('tool-')) {
-            const toolName = part.type.replace('tool-', '')
-            const toolPart = part as { state?: string }
-            const status = toolPart.state === 'output-available' ? "complete" : toolPart.state === 'output-error' ? 'error' : 'running'
-
-            return <ToolStatus key={i} name={toolName} status={status} />
+          // Tool call part: type is `tool-<toolName>` (e.g. tool-generateDiagram)
+          if (part.type?.startsWith("tool-")) {
+            const toolName = part.type.replace("tool-", "");
+            const toolPart = part as { state?: string };
+            const status =
+              toolPart.state === "output-available"
+                ? "complete"
+                : toolPart.state === "output-error"
+                  ? "error"
+                  : "running";
+            return <ToolStatus key={i} name={toolName} status={status} />;
           }
 
-          return null
+          return null;
         })}
       </div>
     </div>

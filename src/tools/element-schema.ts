@@ -19,34 +19,43 @@ export const elementSchema = z.object({
     strokeColor: z
         .string()
         .nullable()
+        .optional()
         .describe("Stroke color (hex). Null for default '#1e1e1e'."),
     backgroundColor: z
         .string()
         .nullable()
+        .optional()
         .describe("Fill color. Null for default 'transparent'."),
-    fillStyle: z.enum(["solid", "hachure", "cross-hatch"]).nullable(),
-    strokeWidth: z.number().nullable(),
+    fillStyle: z
+        .enum(["solid", "hachure", "cross-hatch"])
+        .nullable()
+        .optional(),
+    strokeWidth: z.number().nullable().optional(),
     roughness: z
         .number()
         .nullable()
+        .optional()
         .describe("0 for clean, 1 for sketchy. Null for default."),
-    opacity: z.number().nullable(),
+    opacity: z.number().nullable().optional(),
 
     text: z
         .string()
         .nullable()
+        .optional()
         .describe(
             "REQUIRED for text elements (the label content). FORBIDDEN on rectangle/ellipse/diamond: setting text on a shape does NOT render anything inside the box, you must create a separate text element with containerId pointing to the shape's id. Null for non text elements.",
         ),
-    fontSize: z.number().nullable(),
+    fontSize: z.number().nullable().optional(),
     fontFamily: z
         .number()
         .nullable()
+        .optional()
         .describe("1=Virgil, 2=Helvetica, 3=Cascadia. Null for default."),
-    textAlign: z.enum(["left", "center", "right"]).nullable(),
+    textAlign: z.enum(["left", "center", "right"]).nullable().optional(),
     containerId: z
         .string()
         .nullable()
+        .optional()
         .describe(
             "TEXT elements only. Set this to the id of the rectangle, ellipse, or diamond this label belongs INSIDE. The shape must exist in the same addElements call or already on the canvas. When containerId is set, Excalidraw automatically centers the text inside the container. This is the ONLY way to label a shape. Null for shapes and standalone text.",
         ),
@@ -54,6 +63,7 @@ export const elementSchema = z.object({
     points: z
         .array(z.array(z.number()))
         .nullable()
+        .optional()
         .describe(
             "Arrow/line shape only. Array of [x,y] points relative to the element's x,y. Usually you can leave this null and let the bindings determine the path. Null for non line shapes.",
         ),
@@ -76,6 +86,7 @@ export const elementSchema = z.object({
                 ),
         })
         .nullable()
+        .optional()
         .describe(
             "REQUIRED for arrows that connect two shapes. Set both startBinding AND endBinding for any connecting arrow. Null for lines and standalone arrows.",
         ),
@@ -88,6 +99,7 @@ export const elementSchema = z.object({
             gap: z.number().describe("8 for normal spacing."),
         })
         .nullable()
+        .optional()
         .describe(
             "REQUIRED for arrows that connect two shapes. Pair with startBinding.",
         ),
