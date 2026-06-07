@@ -2,11 +2,14 @@ import {
     generateText,
     streamText,
     stepCountIs,
-    LanguageModel,
-    ModelMessage,
+    tool,
+    type LanguageModel,
+    type ModelMessage,
 } from "ai";
 import { buildTools } from "./tools";
 import { serializeCanvasState } from "./context/canvas-state";
+import { ExcalidrawElement } from "./schemas";
+import { applySkeleton } from "./context/applySkeleton";
 
 export const SYSTEM_PROMPT = `# Role
 
@@ -30,8 +33,8 @@ You are a technical diagram design assistant that controls an Excalidraw canvas.
 
 These are not suggestions. Violating any of them produces a broken diagram or a security termination.
 
-1. **Labels are SEPARATE text elements.** Setting \`text\` on a rectangle, ellipse, or diamond does NOT render anything inside the box. To label a shape, create the shape AND a separate text element positioned over the shape's center.
-2. **Every connecting arrow must bind both ends.** An arrow that connects two shapes MUST set \`startBinding.elementId\` and \`endBinding.elementId\` to ids that exist in the same call or already on the canvas. Arrows without both bindings float free in space.
+1. **Label shapes via the \`label\` field on the shape itself.** To put text inside a rectangle, ellipse, or diamond, set the shape's \`label: { text: "..." }\` field. Do NOT create a separate text element for shape labels. Standalone text elements are for floating annotations only.
+2. **Every connecting arrow must bind both ends.** An arrow that connects two shapes MUST set \`start: { id: "..." }\` to one shape's id and \`end: { id: "..." }\` to the other shape's id. The shapes must exist in the same call or already be on the canvas. Arrows without both bindings float free in space and are a bug.
 3. **No degenerate elements.** Width and height at least 20. No empty text.
 4. **No overlapping elements.** Use the layout grid.
 5. **Pick concise meaningful ids.** \`rect_user\`, never \`element_42\`.
@@ -55,41 +58,36 @@ These are not suggestions. Violating any of them produces a broken diagram or a 
 
 # Negative prompts
 
-- Do NOT put \`text\` on a rectangle and expect it to render as a label inside the box. It will not.
-- Do NOT create arrows with raw \`points\` arrays for shape to shape connections.
-- Do NOT create arrows where bindings reference an id that doesn't exist.
+- Do NOT create a separate text element to label a shape. Use the shape's \`label\` field. A free floating text element placed visually on top of a box is NOT a label and will not move with the box.
+- Do NOT create arrows for shape to shape connections without setting \`start\` and \`end\`.
+- Do NOT create arrows where one or both endpoints reference an id that doesn't exist in this call or on the canvas. The arrow will float.
 - Do NOT place two elements at the same coordinates.
 
-# Worked example: a labeled flow
-
-User: "draw a flow from User to API to Database"
-
-1. \`rect_user\` rectangle at (100, 100) 200x80
-2. \`text_user\` text at (100, 100) 200x80, text="User"
-3. \`rect_api\` rectangle at (380, 100) 200x80
-4. \`text_api\` text at (380, 100) 200x80, text="API"
-5. \`rect_db\` rectangle at (660, 100) 200x80
-6. \`text_db\` text at (660, 100) 200x80, text="Database"
-7. \`arrow_user_api\` arrow with startBinding="rect_user", endBinding="rect_api"
-8. \`arrow_api_db\` arrow with startBinding="rect_api", endBinding="rect_db"
-
-Three boxes, three labels (one per box, same coords, same size), two bound arrows. That is a working diagram.`;
+# Worked example: User: "draw a User -> API -> Database flow." Five elements:
+1. rect_user rectangle at (100, 100) 200x80, label.text="User"
+2. rect_api  rectangle at (380, 100) 200x80, label.text="API"
+3. rect_db   rectangle at (660, 100) 200x80, label.text="Database"
+4. arrow_user_api arrow with start.id="rect_user", end.id="rect_api"
+5. arrow_api_db   arrow with start.id="rect_api",  end.id="rect_db"
+`;
 
 interface AgentArgs {
     model: LanguageModel;
     messages: ModelMessage[];
-    // Seed canvas state for the headless simulator. The eval passes this so
-    // modify cases can be scored against the post application canvas. The
-    // worker leaves it undefined; the browser handles the real mutation.
-    canvasState?: unknown[];
+    // Eval-only: the simulated initial canvas. The worker doesn't pass this —
+    // in production the live browser canvas is the source of truth, fetched on
+    // demand via the queryCanvas client tool. The eval has no browser, so it
+    // simulates one by seeding from this value and answering queryCanvas calls
+    // inline against the simulated state.
+    seedCanvas?: unknown[];
     system?: string;
     maxSteps?: number;
-    env: any;
+    env?: { TAVILY_API_KEY?: string };
 }
 
 const buildSystemPrompt = (
     base: string,
-    canvasState: unknown[] | undefined,
+    canvasState: ExcalidrawElement[] | undefined,
 ): string => {
     console.log({ canvasStateInBuildSystemPrompt: canvasState });
     return `${base}\n\n# Current Canvas state\n\n${serializeCanvasState(canvasState ?? [])}`;
@@ -98,7 +96,7 @@ const buildSystemPrompt = (
 export function streamAgent({
     model,
     messages,
-    canvasState,
+    seedCanvas = [],
     system = SYSTEM_PROMPT,
     maxSteps = 5,
     env,
@@ -115,21 +113,108 @@ export function streamAgent({
 export async function runAgent({
     model,
     messages,
+    seedCanvas = [],
     system = SYSTEM_PROMPT,
     maxSteps = 5,
     env,
-}) {
+}: AgentArgs) {
+    // Mutable simulated canvas for the duration of this run. The eval has no
+    // browser, so we maintain this in memory and let the agent's tool calls
+    // mutate it. queryCanvas reads from it; addElements/updateElements/
+    // removeElements write to it.
+    const sim: Record<string, unknown>[] = (
+        seedCanvas as Record<string, unknown>[]
+    ).map((el) => ({ ...el }));
+
+    // Build eval-only versions of every tool that needs to touch `sim`. We
+    // can't reuse the worker tool definitions because (a) queryCanvas has no
+    // execute on the worker (it's client-side) and (b) the worker mutators
+    // are passthroughs that don't actually update any canvas. Here, every
+    // tool both returns the canonical shape AND mirrors the change into sim.
+    const baseTools = buildTools(env);
+
+    const evalTools = {
+        addElements: tool({
+            description: baseTools.addElements.description,
+            inputSchema: baseTools.addElements.inputSchema as never,
+            execute: async ({ elements }: { elements: unknown[] }) => {
+                // Run the model output through applySkeleton so the simulated canvas
+                // matches what convertToExcalidrawElements would produce in the live
+                // app: shape labels become child text elements with containerId,
+                // arrow start/end shorthand becomes startBinding/endBinding. Without
+                // this, the eval scorers read raw model claims and not what the
+                // canvas would actually render.
+                const runtime = applySkeleton(
+                    elements as Record<string, unknown>[],
+                );
+                for (const el of runtime) sim.push({ ...el });
+                // Surface overlaps in the tool result so the agent loop sees
+                // collisions immediately and can self correct via updateElements.
+                // Same finding the noOverlaps scorer would report on this scene.
+                const overlaps = findOverlaps(sim);
+                return { added: runtime.length, overlaps };
+            },
+        }),
+        updateElements: tool({
+            description: baseTools.updateElements.description,
+            inputSchema: baseTools.updateElements.inputSchema as never,
+            execute: async ({
+                updates,
+            }: {
+                updates: { id: string; fields: Record<string, unknown> }[];
+            }) => {
+                const cleaned = updates.map(({ id, fields }) => {
+                    const filtered: Record<string, unknown> = {};
+                    for (const [key, value] of Object.entries(fields)) {
+                        if (value !== null) filtered[key] = value;
+                    }
+                    return { id, fields: filtered };
+                });
+                for (const { id, fields } of cleaned) {
+                    const target = sim.find((el) => el.id === id);
+                    if (target) Object.assign(target, fields);
+                }
+                return { updates: cleaned };
+            },
+        }),
+        removeElements: tool({
+            description: baseTools.removeElements.description,
+            inputSchema: baseTools.removeElements.inputSchema as never,
+            execute: async ({ ids }: { ids: string[] }) => {
+                for (const id of ids) {
+                    const idx = sim.findIndex((el) => el.id === id);
+                    if (idx >= 0) sim.splice(idx, 1);
+                }
+                return { ids };
+            },
+        }),
+        queryCanvas: tool({
+            description: baseTools.queryCanvas.description,
+            inputSchema: z.object({}),
+            execute: async () => ({ summary: serializeCanvasState(sim) }),
+        }),
+        searchWeb: baseTools.searchWeb,
+    };
+
     const result = await generateText({
         model,
         system,
         messages,
-        tools: buildTools(env),
+        tools: evalTools,
         stopWhen: stepCountIs(maxSteps),
     });
 
+    // Flatten tool names called across all steps, in order. The eval scorers
+    // use this to check whether the agent reached for the right tool.
+    const toolCalls: string[] = [];
+    for (const step of result.steps) {
+        for (const call of step.toolCalls ?? []) toolCalls.push(call.toolName);
+    }
+
     return {
         text: result.text,
-        elements: extractElements(result.steps),
+        elements: sim,
+        toolCalls,
         steps: result.steps,
     };
 }

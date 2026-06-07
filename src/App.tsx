@@ -22,12 +22,16 @@ const AGENT_CONFIG = { agent: "design-agent", name: sessionId };
 // optional so OpenAI strict mode stays on, which means the agent always
 // sends every field. Excalidraw expects undefined for "use the default,"
 // not null, and choking on `points: null` for a rectangle is a real bug.
-function stripNulls(obj: Record<string, unknown>): Record<string, unknown> {
-  const out: Record<string, unknown> = {};
-  for (const [k, v] of Object.entries(obj)) {
-    if (v !== null) out[k] = v;
+function stripNulls(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(stripNulls);
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      if (v !== null) out[k] = stripNulls(v);
+    }
+    return out;
   }
-  return out;
+  return value;
 }
 
 export default function App() {
