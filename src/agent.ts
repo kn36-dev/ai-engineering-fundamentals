@@ -45,6 +45,7 @@ export class DesignAgent extends AIChatAgent<Env> {
                 model: groq("qwen/qwen3-32b"),
                 messages,
                 // canvasState,
+                env: { TAVILY_API_KEY: this.env.TAVILY_API_KEY },
             });
 
             // 2. Tap the returned object's background promises for debugging.
