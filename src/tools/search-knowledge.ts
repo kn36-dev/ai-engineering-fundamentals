@@ -1,0 +1,48 @@
+import { tool } from "ai";
+import { z } from "zod";
+import { getIndex, type VectorEnv } from "../rag/vector-store";
+
+export function makeSearchKnowledge(env: VectorEnv) {
+    return tool({
+        description: `Search the private knowledge base for reference material on systems, processes, and topics the user might ask you to draw. Use this BEFORE drawing when the request touches a specific technical system, protocol, organizational structure, or process where precise details matter. The corpus contains short reference docs the model may not have memorized accurately.
+
+Example: searchKnowledge({ query: "OAuth 2.0 authorization code flow with PKCE" })`,
+        inputSchema: z.object({
+            // Ways to improve this query
+            // The query needs more context to be good
+            // Enhance the query in execute block, reference to other good queries
+            // Adding in optional context object like the original user message to ground the LLM
+            // Maybe a good LLM is waiting in the execute block to decide how to query
+            query: z
+                .string()
+                .describe(
+                    "Natural language query describing what you need to know",
+                ),
+        }),
+        execute: async ({ query }) => {
+            try {
+                const index = getIndex(env);
+                const results = await index.query({
+                    data: query,
+                    topK: 3,
+                    includeMetadata: true,
+                });
+                return {
+                    results: results.map((r) => ({
+                        source:
+                            (r.metadata as { source?: string } | undefined)
+                                ?.source ?? String(r.id),
+                        content:
+                            (r.metadata as { content?: string } | undefined)
+                                ?.content ?? "",
+                        score: r.score,
+                    })),
+                };
+            } catch (err) {
+                return {
+                    error: `Knowledge search failed: ${err instanceof Error ? err.message : String(err)}`,
+                };
+            }
+        },
+    });
+}

@@ -13,6 +13,9 @@ dependencies:
   '@toon-format/toon':
     specifier: ^2.3.0
     version: 2.3.0
+  '@upstash/vector':
+    specifier: ^1.2.3
+    version: 1.2.3
   agents:
     specifier: ^0.13.3
     version: 0.13.3(@babel/core@7.29.7)(@cloudflare/ai-chat@0.7.2)(@cloudflare/workers-types@4.20221111.0)(ai@6.0.191)(react@19.0.0)(rolldown@1.0.3)(vite@6.0.0)(zod@4.4.3)
@@ -3218,6 +3221,10 @@ packages:
   /@ungap/structured-clone@1.3.1:
     resolution: {integrity: sha512-mUFwbeTqrVgDQxFveS+df2yfap6iuP20NAKAsBt5jDEoOTDew+zwLAOilHCeQJOVSvmgCX4ogqIrA0mnyr08yQ==}
     dev: true
+
+  /@upstash/vector@1.2.3:
+    resolution: {integrity: sha512-yXsWKeuHNYyH72BcSZd3bV5ZD5MybAoTvKxkMaeV2UzuGfNzbHBVh5eO+ysTWTFAf8I9XcOueF4tZfAGjCa4Iw==}
+    dev: false
 
   /@vercel/functions@1.6.0:
     resolution: {integrity: sha512-R6FKQrYT5MZs5IE1SqeCJWxMuBdHawFcCZboKKw8p7s+6/mcd55Gx6tWmyKnQTyrSEA04NH73Tc9CbqpEle8RA==}

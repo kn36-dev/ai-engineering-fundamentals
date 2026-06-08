@@ -1,8 +1,18 @@
 import { z } from "zod";
 import { tool } from "ai";
 
+interface TavilyResult {
+    title?: string;
+    content?: string;
+    url?: string;
+}
+
+interface TavilyResponse {
+    results?: TavilyResult[];
+}
+
 // We can use Tavily, Exa, Perplexity, Firecrawl
-export function makeSearchWeb(apiKey: string) {
+export function makeSearchWeb(apiKey: string | undefined) {
     return tool({
         description: `Search the web for current information. Use this when a user asks you about tech you don't know about or never heard of. Provide keyword terms only.`,
         inputSchema: z.object({
